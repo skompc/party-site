@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Panel</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <h1 id="signedInUser"></h1>
+    <button type="button" onclick="gotoMsg()">Messages</button>
+    <button type="button" onclick="gotoEdit()">Database</button>
+    <button type="button" onclick="gotoUsers()">Users</button>
+    <button type="button" onclick="gotoLogs()">Logs</button>
+    <button type="button" onclick="gotoLogout()">Log Out</button>
+
+    <script>
+        // Use JavaScript to display the error message
+        const signedInUser = '<%= signedInUser %>'; // Retrieve error message from server-side
+        document.getElementById('signedInUser').innerText = `Signed in as: ${signedInUser}`;
+    </script>
+
+    <script>
+
+        function gotoMsg() {
+            window.location.href = '/msg';
+        }
+
+        function gotoEdit() {
+            window.location.href = '/edit';
+        }
+
+        function gotoLogout() {
+            window.location.href = '/logout';
+        }
+
+        function gotoUsers() {
+            window.location.href = '/users'
+        }
+
+        function gotoLogs() {
+            window.location.href = "./logs"
+        }
+
+    </script>
+</body>
+
+</html>

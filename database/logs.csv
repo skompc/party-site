@@ -1,0 +1,19 @@
+,year,month,day,hour,minute,second,message
+2024,02,29,13,30,29,admin has logged out from ::1!
+2024,02,29,13,35,2,HTTP server running on port 80
+2024,02,29,13,35,2,HTTPS server started on port 443
+2024,02,29,14,47,59,HTTP server running on port 80
+2024,02,29,14,47,59,HTTPS server started on port 443
+2024,02,29,14,49,31,User: admin has logged in from IP: ::1!
+2024,02,29,15,6,28,admin has logged out from ::1!
+2024,02,29,15,29,28,HTTP server running on port 80
+2024,02,29,15,29,28,HTTPS server started on port 443
+2024,02,29,15,29,49,User: admin has logged in from IP: ::ffff:192.168.0.13!
+2024,02,29,15,30,12,User: admin has logged in from IP: ::1!
+2024,02,29,15,30,45,admin has logged out from ::ffff:192.168.0.13!
+2024,02,29,15,30,51,admin has logged out from ::1!
+2024,02,29,15,31,5,User: admin has logged in from IP: ::1!
+2024,02,29,15,31,39,User: admin has logged in from IP: ::ffff:192.168.0.13!
+2024,02,29,15,33,50,admin has logged out from ::1!
+2024,02,29,15,33,56,User: admin has logged in from IP: ::1!
+2024,02,29,15,36,17,admin has logged out from ::1!

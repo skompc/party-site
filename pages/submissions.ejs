@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Party Requests</title>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="alert-box" id="confirmationBox">
+    Are you sure you want to delete this row?
+    <br>
+    <div class="red-text">THIS IS IMMEDIATE AND PERMANANT!!!</div>
+    <br>
+    <button class="btn btn-yes" id="yesButton">Yes</button>
+    <button class="btn btn-no" onclick="cancelDelete()">No</button>
+  </div>
+
+  <div class="alert-box" id="message-box">
+    <textarea class="msg-textarea" id="msg-textarea" rows="4" cols='50'></textarea>
+    <button class="btn btn-no" onclick="closeMsgBox()">Close</button>
+  </div>
+
+  <div class="alert-box" id="uploadBox">
+    <h1>File Upload</h1>
+    <br>
+    <div class="red-text">THIS IS IMMEDIATE AND PERMANANT!!!
+        <br>THIS WILL REPLACE ALL CURRENT SETTINGS!!!
+    </div>
+    <br>
+    <form action="/csv?data=submissions" method="POST" enctype="multipart/form-data">
+        <input type="file" name="myFile">
+        <input type="submit" value="Upload">
+    </form>
+    <button class="btn btn-no" onclick="cancelUpload()">Cancel</button>
+</div>
+
+  <h1>Party Requests</h1>
+
+  <button onclick="saveChanges()">Save Changes</button>
+  <button onclick="downloadCSV()">Download .csv</button>
+  <button onclick="uploadCSV()">Upload .csv</button>
+  <button onclick="gotoAdminPanel()">Return</button>
+
+  <br>
+  <br>
+  
+  <table id="csvTable"></table>
+
+  <script>
+
+    let currentRow;
+
+    function saveChanges() {
+      const tableRows = Array.from(document.querySelectorAll('#csvTable tr'));
+      const updatedData = tableRows.map(row =>
+        Array.from(row.querySelectorAll('input')).map(input => input.value)
+      );
+
+      const formattedData = updatedData
+        .map(row => row.join(','))
+        .join('\n');
+
+      fetch('/submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/csv'
+        },
+        body: formattedData
+      })
+        .then(response => response.text())
+        .then(message => {
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
+    }
+
+    function downloadCSV() {
+      fetch('/csv?data=submissions')
+        .then(response => response.text())
+        .then(data => {
+          // Create a Blob from the CSV data
+          const blob = new Blob([data], { type: 'text/csv' });
+
+          // Create a temporary anchor element
+          const anchor = document.createElement('a');
+          anchor.href = window.URL.createObjectURL(blob);
+          anchor.download = 'data.csv';
+          anchor.click();
+
+          // Clean up
+          window.URL.revokeObjectURL(anchor.href);
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // Handle errors if necessary
+        });
+    }
+
+    function gotoAdminPanel() {
+      window.location.href = '/dashboard';
+    }
+
+    function loadCSV() {
+      fetch('/csv?data=submissions')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to fetch CSV');
+          }
+          return response.text();
+        })
+        .then(data => {
+          const rows = data.split('\n').map(row => row.split(','));
+          rows.pop();
+          const table = document.getElementById('csvTable');
+
+          // Create table header
+          const headerRow = document.createElement('tr');
+          rows[0].forEach(headerText => {
+            const th = document.createElement('th');
+            th.textContent = headerText;
+            headerRow.appendChild(th);
+          });
+          table.appendChild(headerRow);
+
+          // Create table rows
+          for (let i = 1; i < rows.length; i++) {
+            let j = 0;
+            let content = '';
+            const tr = document.createElement('tr');
+
+            // Add delete button to each row
+            const deleteCell = document.createElement('td');
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.addEventListener('click', function (event) {
+              const rowToDelete = event.target.closest('tr');
+              const rowIndex = Array.from(rowToDelete.parentNode.children).indexOf(rowToDelete) - 1; // Adjust the index since you skipped the header row
+              showConfirmation(rowIndex);
+            });
+            deleteCell.appendChild(deleteBtn);
+            tr.appendChild(deleteCell);
+
+            // Populate cells with input fields and data
+            rows[i].forEach(cellData => {
+              j++;
+              const td = document.createElement('td');
+              const input = document.createElement('input');
+              input.value = cellData;
+              input.id=`${i}-${j}`
+              td.appendChild(input);
+              tr.appendChild(td);
+              content = cellData;
+            });
+
+            table.appendChild(tr);
+
+            const messageCell = document.createElement('td');
+            const messageBtn = document.createElement('button');
+            messageBtn.textContent = 'View Full Message';
+            messageBtn.addEventListener('click', function (event) {
+              viewFullMessage(i, content);
+            });
+            messageCell.appendChild(messageBtn);
+            tr.appendChild(messageCell);
+
+          }
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+
+    function showConfirmation(rowIndex) {
+      const confirmationBox = document.getElementById('confirmationBox');
+      confirmationBox.style.display = 'block';
+      document.getElementById('yesButton').setAttribute('onclick', `deleteRow(${rowIndex})`);
+    }
+
+    function deleteRow(rowIndex) {
+      const table = document.getElementById('csvTable');
+      table.deleteRow(rowIndex + 1); // Adjust the index to account for the header row
+
+      // Send a request to the server to delete the row from the CSV file
+      fetch(`/submissions?index=${rowIndex + 1}`, {
+        method: 'DELETE'
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to delete row');
+          }
+          console.log('Row deleted successfully');
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // If there's an error, you might want to handle row deletion on the frontend accordingly
+          // For example, by showing an error message or reverting the deletion on the frontend
+        });
+      hideConfirmation();
+    }
+
+    function hideConfirmation() {
+      const confirmationBox = document.getElementById('confirmationBox');
+      confirmationBox.style.display = 'none';
+    }
+
+    function cancelDelete() {
+      hideConfirmation();
+    }
+
+    function viewFullMessage(i, message) {
+      const m = document.getElementById('message-box');
+      m.style.display = 'block';
+      message = message.replace(/#/g, "\n").replace(/\*/g,',');
+      document.getElementById('msg-textarea').value = message;
+      document.getElementById(`${i}-1`).value = "";
+    }
+
+    function closeMsgBox() {
+      const m = document.getElementById('message-box');
+      m.style.display = 'none';
+    }
+
+    function uploadCSV() {
+      const confirmationBox = document.getElementById('uploadBox');
+      confirmationBox.style.display = 'block';
+    }
+
+    function cancelUpload() {
+      const confirmationBox = document.getElementById('uploadBox');
+      confirmationBox.style.display = 'none';
+    }
+
+    loadCSV();
+  </script>
+</body>
+
+</html>

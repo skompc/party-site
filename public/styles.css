@@ -1,0 +1,225 @@
+body {
+    background-color: black;
+    color: white;
+    text-align: center;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    /* Added padding for better spacing */
+}
+
+header {
+    margin-bottom: 20px;
+    width: calc(100% - 20px)
+}
+
+h1 {
+    font-size: 36px;
+}
+
+p {
+    color: #fff;
+    margin-bottom: 20px;
+}
+
+form {
+    width: calc(100% - 20px);
+    margin: 0 auto;
+}
+
+label,
+input,
+textarea {
+    display: block;
+    margin-bottom: 10px;
+    width: calc(100% - 20px);
+    box-sizing: border-box;
+}
+
+.big-textarea{
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+select {
+    padding: 10px 20px;
+    background-color: #444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    width: calc(100% - 20px);
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.alert-box {
+    max-width: 100%;
+    max-height: 100%;
+    display: none;
+    background-color: #333;
+    color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    text-align: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+input[type="email"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+input[type="phone"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+input[type="zip"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+input[type="password"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+input[type="submit"] {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+input[type="file"] {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+button {
+    background-color: #444;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+}
+
+.red-text {
+    color: #ff4444
+}
+
+.btn {
+    padding: 10px 20px;
+    margin: 10px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.btn-red {
+    background-color: #ff4444;
+}
+
+.btn-grey {
+    background-color: #444;
+}
+
+.btn-green {
+    background-color: green;
+}
+
+h1 {
+    color: #fff;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    color: #fff;
+}
+
+td {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: left;
+    background-color: #333;
+}
+
+td input {
+    box-sizing: border-box;
+    background-color: #444;
+    color: #fff;
+    border: 1px solid #666;
+    padding: 6px;
+}
+
+td input[type="text"] {
+    width: 100%;
+}
+
+.table-cell {
+    display: flex;
+    align-items: flex-start; /* Align items to the start of the flex container */
+}
+
+.checkbox-container {
+    display: flex;
+    flex-direction: column; /* Arrange items vertically */
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-label input[type="checkbox"] {
+    margin-right: 5px;
+}
+
+.checkbox-label span {
+    flex: 1;
+    text-align: right;
+}

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Error!</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h1>Error</h1>
+  <p id="errorMessage"></p>
+
+  <button type = "back" onclick="goBack()">Go Back</button>
+
+  <script>
+    function goBack() {
+      window.history.back(); // Go back to the previous page
+    }
+  </script>
+
+  <script>
+    // Use JavaScript to display the error message
+    const errorMessage = '<%= errorMessage %>'; // Retrieve error message from server-side
+    document.getElementById('errorMessage').innerText = errorMessage;
+  </script>
+</body>
+</html>
+

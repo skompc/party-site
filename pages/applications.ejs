@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Submitted Applications</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="alert-box" id="confirmationBox">
+        Are you sure you want to delete this row?
+        <br>
+        <div class="red-text">THIS IS IMMEDIATE AND PERMANANT!!!</div>
+        <br>
+        <button class="btn btn-red" id="yesButton">Yes</button>
+        <button class="btn btn-grey" onclick="closeAlertBox()">No</button>
+    </div>
+
+    <div class="alert-box" id="apply-box">
+        <label for="username">Application For:</label>
+        <input type="text" id="toUser" name="username" required>
+
+        <label for="fullname">Real Name:</label>
+        <input type="text" id="fullname" name="fullname" required>
+
+        <label for="email">Email Address:</label>
+        <input type="text" id="email" name="email" required>
+
+        <label for="phone">Phone Number:</label>
+        <input type="text" id="phone" name="phone" required>
+
+        <label for="street">Street Address:</label>
+        <input type="text" id="street" name="street" required>
+
+        <label for="city">City:</label>
+        <input type="text" id="city" name="city" required>
+
+        <label for="zip">Zip Code:</label>
+        <input type="text" id="zip" name="zip" required>
+
+        <button class="btn btn-green"
+            onclick="approveApplication(document.getElementById('row').value)">Approve</button>
+        <button class="btn btn-red"
+            onclick="denyApplication(document.getElementById('row').value)">Deny</button>
+        <button class="btn btn-grey" onclick="closeAlertBox()">Cancel</button>
+    </div>
+
+    <div class="alert-box" id="uploadBox">
+        <h1>File Upload</h1>
+        <br>
+        <div class="red-text">THIS IS IMMEDIATE AND PERMANANT!!!
+            <br>THIS WILL REPLACE ALL CURRENT SETTINGS!!!
+        </div>
+        <br>
+        <form action="/csv?data=applications" method="POST" enctype="multipart/form-data">
+            <input type="file" name="myFile">
+            <input type="submit" value="Upload">
+        </form>
+        <button class="btn btn-grey" onclick="closeAlertBox()">Cancel</button>
+    </div>
+
+    <div class="alert-box">
+        <input type="text" id="message">
+        <input type="text" id="row">
+    </div>
+
+    <h1>Submitted Applications</h1>
+
+    <button onclick="saveChanges()">Save Changes</button>
+    <button onclick="downloadCSV()">Download .csv</button>
+    <button onclick="uploadCSV()">Upload .csv</button>
+    <button onclick="gotoAdminPanel()">Return</button>
+
+    <br>
+    <br>
+
+    <table id="csvTable"></table>
+
+    <script>
+
+        let currentRow;
+
+        function saveChanges() {
+            const tableRows = Array.from(document.querySelectorAll('#csvTable tr'));
+            const updatedData = tableRows.map(row =>
+                Array.from(row.querySelectorAll('input')).map(input => input.value)
+            );
+
+            const formattedData = updatedData
+                .map(row => row.join(','))
+                .join('\n');
+
+            fetch('/applications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/csv'
+                },
+                body: formattedData
+            })
+                .then(response => response.text())
+                .then(message => {
+                    location.reload();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function downloadCSV() {
+            fetch('/csv?data=applications')
+                .then(response => response.text())
+                .then(data => {
+                    // Create a Blob from the CSV data
+                    const blob = new Blob([data], { type: 'text/csv' });
+
+                    // Create a temporary anchor element
+                    const anchor = document.createElement('a');
+                    anchor.href = window.URL.createObjectURL(blob);
+                    anchor.download = 'data.csv';
+                    anchor.click();
+
+                    // Clean up
+                    window.URL.revokeObjectURL(anchor.href);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Handle errors if necessary
+                });
+        }
+
+        function gotoAdminPanel() {
+            window.location.href = '/dashboard';
+        }
+
+        function loadCSV() {
+            fetch('/csv?data=applications')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch CSV');
+                    }
+                    return response.text();
+                })
+                .then(data => {
+                    const rows = data.split('\n').map(row => row.split(','));
+                    rows.pop();
+                    const table = document.getElementById('csvTable');
+
+                    // Create table header
+                    const headerRow = document.createElement('tr');
+                    rows[0].forEach(headerText => {
+                        const th = document.createElement('th');
+                        th.textContent = headerText;
+                        headerRow.appendChild(th);
+                    });
+                    table.appendChild(headerRow);
+
+                    // Create table rows
+                    for (let i = 1; i < rows.length; i++) {
+                        let j = 0;
+                        let content = '';
+                        const tr = document.createElement('tr');
+
+                        // Add delete button to each row
+                        const deleteCell = document.createElement('td');
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.textContent = 'Delete';
+                        deleteBtn.addEventListener('click', function (event) {
+                            const rowToDelete = event.target.closest('tr');
+                            const rowIndex = Array.from(rowToDelete.parentNode.children).indexOf(rowToDelete) - 1; // Adjust the index since you skipped the header row
+                            showConfirmation(rowIndex);
+                        });
+                        deleteCell.appendChild(deleteBtn);
+                        tr.appendChild(deleteCell);
+
+                        // Populate cells with input fields and data
+                        rows[i].forEach(cellData => {
+                            j++;
+                            const td = document.createElement('td');
+                            const input = document.createElement('input');
+                            input.value = cellData;
+                            input.id = `${i}-${j}`;
+                            td.appendChild(input);
+                            tr.appendChild(td);
+                            content = cellData;
+                        });
+
+                        table.appendChild(tr);
+
+                        const messageCell = document.createElement('td');
+                        const messageBtn = document.createElement('button');
+                        messageBtn.textContent = 'Application Status';
+                        messageBtn.addEventListener('click', function (event) {
+                            showApplyBox(i, document.getElementById(`${i}-2`).value,document.getElementById(`${i}-3`).value,document.getElementById(`${i}-4`).value,document.getElementById(`${i}-5`).value,document.getElementById(`${i}-6`).value,document.getElementById(`${i}-7`).value,document.getElementById(`${i}-8`).value,document.getElementById(`${i}-9`).value)
+                        });
+                        messageCell.appendChild(messageBtn);
+                        tr.appendChild(messageCell);
+
+                    }
+                })
+                .catch(error => {
+                    console.error(error);
+                });
+        }
+
+        function showConfirmation(rowIndex) {
+            const confirmationBox = document.getElementById('confirmationBox');
+            confirmationBox.style.display = 'block';
+            document.getElementById('yesButton').setAttribute('onclick', `deleteRow(${rowIndex})`);
+        }
+
+        function deleteRow(rowIndex) {
+            const table = document.getElementById('csvTable');
+            table.deleteRow(rowIndex + 1); // Adjust the index to account for the header row
+
+            // Send a request to the server to delete the row from the CSV file
+            fetch(`/applications?index=${rowIndex + 1}`, {
+                method: 'DELETE'
+            })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to delete row');
+                    }
+                    console.log('Row deleted successfully');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // If there's an error, you might want to handle row deletion on the frontend accordingly
+                    // For example, by showing an error message or reverting the deletion on the frontend
+                });
+            closeAlertBox();
+        }
+
+        function viewFullMessage(message) {
+            const m = document.getElementById('message-box');
+            m.style.display = 'block';
+            message = message.replace(/#/g, "\n").replace(/\*/g, ',');
+            document.getElementById('msg-textarea').value = message;
+        }
+
+        function uploadCSV() {
+            const confirmationBox = document.getElementById('uploadBox');
+            confirmationBox.style.display = 'block';
+        }
+
+        function newMsg(isNew, userPre, datePre, timePre, messagePre) {
+            var toUser = document.getElementById("toUser").value;
+            var message = document.getElementById("message").value;
+
+            var data = new URLSearchParams();
+
+            const d_t = new Date();
+
+            let year = d_t.getFullYear();
+            let month = ("0" + (d_t.getMonth() + 1)).slice(-2);
+            let day = ("0" + d_t.getDate()).slice(-2);
+            let hour = ("0" + d_t.getHours()).slice(-2);
+            let minute = ("0" + d_t.getMinutes()).slice(-2);
+            let seconds = ("0" + d_t.getSeconds()).slice(-2);
+            let newPost;
+
+            if (isNew == 1) {
+                newPost = `NEW,ADMIN,${month}-${day}-${year},${hour}:${minute}:${seconds},${message}\n`
+            } else {
+                toUser = signedInUser;
+                newPost = ` ,${userPre},${datePre},${timePre},${messagePre}\n`
+            }
+
+            data.append('toUser', toUser);
+            data.append('newPost', newPost);
+
+            fetch('/msg', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded' // Set content type
+                },
+                body: data
+            })
+                .then(response => response.text())
+                .then(message => {
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
+
+        function showApplyBox(row, user, name, email, phone, street, city, state, zip) {
+            document.getElementById("toUser").value = user;
+            document.getElementById("fullname").value = name;
+            document.getElementById("email").value = email;
+            document.getElementById("phone").value = phone;
+            document.getElementById("street").value = street;
+            document.getElementById("city").value = city;
+            document.getElementById("zip").value = zip;
+            document.getElementById("row").value = row;
+
+            const m = document.getElementById('apply-box');
+            m.style.display = 'block';
+        }
+
+        function approveApplication(row) {
+            document.getElementById(`${row}-1`).value = "";
+            document.getElementById(`${row}-10`).value = "APPROVED";
+            document.getElementById("message").value = "Your Application has been APPROVED";
+            newMsg(1);
+            saveChanges()
+        }
+
+        function denyApplication(row) {
+            document.getElementById(`${row}-1`).value = "";
+            document.getElementById(`${row}-10`).value = "DENIED";
+            document.getElementById("message").value = "Your Application has been DENIED";
+            newMsg(1);
+            saveChanges()
+        }
+
+        function closeAlertBox() {
+            document.querySelectorAll('.alert-box').forEach(function (el) {
+                el.style.display = 'none';
+            });
+        }
+
+        loadCSV();
+    </script>
+</body>
+
+</html>
